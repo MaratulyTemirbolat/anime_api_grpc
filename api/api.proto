@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./../api";
+
+package api;
+
+
+// USER SERVICE START
+
+service UserService {
+    rpc BlockUser(UserAddBlockUserRequest) returns (ActionResponse);
+    rpc AddUser(UserAddBlockUserRequest) returns (ActionResponse);
+    rpc ViewUserPage(ViewUserPageRequest) returns (ViewUserPageResponse);
+}
+
+message UserAddBlockUserRequest {
+    uint32 fromUserId = 1;
+    uint32 toUserId = 2;
+}
+
+message ViewUserPageRequest {
+    uint32 userId = 1;
+    uint32 visitedUserId = 2;
+}
+
+message ViewUserPageResponse {
+    uint32 userId = 1;
+    string firstName = 2;
+    string lastName = 3;
+    string email = 4;
+    string username = 5;
+    repeated string phones = 6;
+    bool is_blocked = 7;
+}
+// ANIME SERVICE
+
+service AnimeService {
+    rpc HandleAnime(UserAnimeActionRequest) returns (ActionResponse);
+    rpc RemoveAnime(RemoveAnimeRequest) returns (AnimeResponse);
+    rpc ViewAnime(ViewAnimeRequest) returns (ViewAnimeResponse);
+}
+
+message RemoveAnimeRequest{
+    uint32 userId = 1;
+    uint32 animeId = 2;
+}
+
+message UserAnimeActionRequest {
+    uint32 userId = 1;
+    uint32 animeId = 2;
+    uint32 actionId = 3;
+}
+
+
+message AnimeResponse{
+    string name = 1;
+    bool success = 2;
+    string message = 3;
+}
+
+message ViewAnimeRequest{
+    uint32 userId = 1;
+    uint32 animeId = 2;
+}
+
+message ViewAnimeResponse{
+    uint32 animeId = 1;
+    string name = 2;
+    string description = 3;
+    string releaseDate = 4;
+    string animeGroup = 5;
+    double rating = 6;
+    int32 viewsNumber = 7;
+    string studioName = 8;
+    repeated string genres = 9; 
+}
+
+// COMMENT SERVICE
+
+service CommentService {
+    rpc ShowAnimeComments(ShowAnimeCommentsRequest) returns (ShowAnimeCommentsResponse);
+    rpc CommentAnime(CommentAnimeRequest) returns (ActionResponse);
+    rpc ReplyUserCommentAnime(ReplyUserCommentAnimeRequest) returns (ActionResponse);
+    
+}
+
+message EditAnimeCommentRequest {
+    uint32 userId = 1;
+    uint32 commentId = 2;
+    string content = 3;
+    
+}
+
+message ShowAnimeCommentsRequest {
+    uint32 animeId = 1;
+}
+
+message ShowAnimeCommentsResponse {
+    uint32 animeId = 1;
+    uint32 commentId = 2;
+    string content = 3;
+    uint32 repliedMessageId = 4;
+    google.protobuf.Timestamp dateTimeCreated = 5;
+}
+
+message CommentAnimeRequest {
+    uint32 userId = 1;
+    uint32 animeId = 2;
+    string content = 3;
+}
+
+message ReplyUserCommentAnimeRequest {
+    uint32 userId = 1;
+    uint32 animeId = 2;
+    string content = 3;
+    uint32 repliedCommentId = 4;
+}
+
+message ActionResponse {
+    bool success = 1;
+    string message = 2;
+}
