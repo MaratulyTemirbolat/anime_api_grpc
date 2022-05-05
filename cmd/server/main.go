@@ -82,7 +82,7 @@ func (cs *CommentServ) ReplyUserCommentAnime(context.Context, *api.ReplyUserComm
 }
 
 func main() {
-	db.ConnectDB()
+	db.ConnectGenDB()
 	listener, err := net.Listen("tcp", port) // То, что мы используем для слушанья сервера
 	if err != nil {
 		log.Fatalf("Cannot listen to %s: %v", port, err)

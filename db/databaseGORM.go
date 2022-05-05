@@ -8,12 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
-const dbConfiguration string = "host = 127.0.0.1 port = 5432 user = postgres dbname = anime_api_trial password = 1538 sslmode=disable TimeZone=Asia/Almaty"
+const dbConfigurat string = "host = 127.0.0.1 port = 5432 user = postgres dbname = trial_grpc password = 1538 sslmode=disable TimeZone=Asia/Almaty"
 
-var DB *gorm.DB
+var DatabaseGORM *gorm.DB
 
-func ConnectDB() {
-	database, err := gorm.Open(postgres.Open(dbConfiguration), &gorm.Config{})
+func ConnectDBORM() {
+	database, err := gorm.Open(postgres.Open(dbConfigurat), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Could not connect to db anime_api_trial: %v", err)
 	}
@@ -28,10 +28,13 @@ func ConnectDB() {
 		&models.Studio{},
 		&models.AnimeGroup{},
 		&models.Type{},
-
 		&models.Anime{},
 		&models.UserAnimeAction{},
 		&models.Comment{},
 	)
-	DB = database
+	err = database.SetupJoinTable(&models.User{}, "Friends", &models.UserFriend{})
+	if err != nil {
+		log.Fatalf("Извините, но у вас возникла ошибка: %v", err)
+	}
+	DatabaseGORM = database
 }
