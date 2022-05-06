@@ -1,0 +1,392 @@
+-- Data insertion
+
+-- USERS INSERTION
+INSERT INTO users(username, first_name, last_name, email, password, birthday)
+VALUES('nazifama','Nazifa','Tebol','tebol35748@3dmasti.com','RNseQs2P','24.06.1998'),
+       ('coolbob','John','Bob','johnbob@yahoo.ca','b6H6AArj','13.07.2012'),
+       ('nicedan','Dan','Neng','danneng@yahoo.com','VhUNK5jT','21.09.1999'),
+       ('conymoney','Cony','Cohen','ccohen@att.net','HSH9S4m7','10.07.1992'),
+       ('elinamungee','Elina','Munge','munge@gmail.com','qv3QQHxX','23.12.1980');
+
+-- ANIME_groups INSERTION
+INSERT INTO anime_groups(name)
+VALUES ('Naruto'),
+       ('Dororo'),
+       ('Demon Slayer'),
+       ('Inuyasha'),
+       ('Tokyo Revengers'),
+       ('Bleach'),
+       ('Cowboy Bebop'),
+       ('My Hero Academia'),
+       ('Attack on Titan'),
+       ('Jujutsu Kaisen'),
+       ('Steins Gate'),
+       ('Tokyo Ghoul'),
+       ('Kamisama Kiss'),
+       ('Love Live!'),
+       ('The Melancholy of Haruhi Suzumiya'),
+       ('Violet Evergarden'),
+       ('Fullmetal Alchemist'),
+       ('Dragon Ball'),
+       ('Death Note'),
+       ('One Piece'),
+       ('Toradora!'),
+       ('Kaichou wa Maid-sama!'),
+       ('Say "I Love You."'),
+       ('Nana'),
+       ('Plastic Memories'),
+       ('Yuri!!! on Ice'),
+       ('My Little Monster'),
+       ('Fruits Basket'),
+       ('Given'),
+       ('91 Days'),
+       ('Banana Fish');
+
+SELECT *
+FROM anime_groups;
+
+-- STUDIOS table insertion
+INSERT INTO studios(name)
+VALUES ('Pierrot'),
+       ('MAPPA'),
+       ('Ufotable'),
+       ('Sunrise'),
+       ('LIDENFILMS'),
+       ('Bones'),
+       ('Wit Studio'),
+       ('White Fox');
+
+-- Anime Types table insertion
+INSERT INTO types(name)
+VALUES ('Season'),
+       ('OVA'),
+       ('Another');
+
+SELECT *
+FROM types;
+
+-- ANIME table insertion
+
+INSERT INTO animes(name,description, release_date, group_id, rating, views_number,type_id,studio_id)
+VALUES ('Naruto 1','Naruto is a Japanese manga series written and illustrated by Masashi Kishimoto. It tells the story of Naruto Uzumaki, a young ninja who seeks recognition from his peers and dreams of becoming the Hokage, the leader of his village.
+','03.10.2002',1,8.4,38742,1,1),
+       ('Naruto Shippuden','Two and a half years have passed since the end of Naruto’s old adventures. He has trained hard with Jiraiya-sama and has returned to Konoha to reunite with his friends; but Akatsuki, the organization that threatened Naruto years before, is on the move again and this time Naruto is not the only one in danger. With the powerful Akatsuki organization looming ahead of him, Sasuke still missing, and the struggle with the beast hidden inside him a continuous battle, will Naruto''s hard-earned improvements be enough? Join Naruto, Sakura, new friends and the rest of the old gang as the action heats up with new techniques and stronger enemies.
+','15.02.2007',1,8.6,28347,1,1),
+       ('Dororo Season 1','A mysterious warrior with prosthetic limbs and a young orphan thief travel across Japan fighting demons who threaten humanity.
+','07.01.2019',2,8.3,19848,1,2),
+       ('Demon Slayer Season 1','A family is attacked by demons and only two members survive - Tanjiro and his sister Nezuko, who is turning into a demon slowly. Tanjiro sets out to become a demon slayer to avenge his family and cure his sister.
+','16.10.2020',3,8.3,18280,1,3),
+       ('Demon Slayer Season 2','The second season adapts volumes seven to eleven (chapters 55–97) of the manga series and ran in two cours, with the first part titled Demon Slayer: Kimetsu no Yaiba – Mugen Train Arc, a seven-episode recompilation of "Mugen Train" as seen in the 2020 film featuring new music and an all new original episode, which aired from October 10 to November 28, 2021.
+','10.10.2021',3,8.3,28499,2,3),
+       ('Inuyasha Season 1','Based on the Shogakukan award-winning manga of the same name, InuYasha follows Kagome Higurashi, a fifteen-year-old girl whose normal life ends when a demon drags her into a cursed well on the grounds of her family''s Shinto shrine. Instead of hitting the bottom of the well, Kagome ends up 500 years in the past during Japan''s violent Sengoku period with the demon''s true target, a wish-granting jewel called the Shikon Jewel, reborn inside of her.
+','16.10.2000',4,8.4,10292,1,4),
+       ('Inuyasha Season 2','The second season of the anime series Inuyasha aired in Japan on ytv from May 28, 2001, through December 10, 2001. Based on the manga series of the same title by Rumiko Takahashi, the anime was produced by Sunrise.
+','28.05.2001',4,7.9,30020,2,4),
+       ('Inuyasha Season 3','The third season of the anime series Inuyasha aired in Japan on ytv from December 17, 2001, through August 12, 2002. Based on the manga series of the same title by Rumiko Takahashi, the anime was produced by Sunrise.
+','17.12.2002',4,7.9,10029,1,4),
+       ('Tokyo Revengers Season 1','Hanagaki Takemichi lives an unsatisfying life right up until his death. Waking up 12 years in the past, he reckons with the eventual fate of his friends and tries to prevent an unfortunate future.
+','19.09.2021',5,7.9,10293,3,5),
+       ('Bleach Season 1','Ichigo Kurosaki never asked for the ability to see ghosts -- he was born with the gift. When his family is attacked by a Hollow -- a malevolent lost soul -- Ichigo becomes a Soul Reaper, dedicating his life to protecting the innocent and helping the tortured spirits themselves find peace.
+','05.10.2004',6,8.1,34583,1,1),
+       ('Bleach Season 2','The Soul Society: The Sneak Entry arc is the second season of the Bleach anime series, containing 21 episodes. The episodes are directed by Noriyuki Abe, and produced by TV Tokyo, Dentsu and Studio Pierrot. In the English release by Viz Media, the title is translated as The Entry.
+','01.03.2005',6,7.8,13958,1,1),
+       ('Bleach Season 3','The Soul Society: The Rescue arc is the third season of the Bleach anime series. In the English adaptation of the anime released by Viz Media, the title of the season is translated as The Rescue. The episodes are directed by Noriyuki Abe, and produced by TV Tokyo, Dentsu and Studio Pierrot.
+','26.06.2005',6,8.3,10293,1,1),
+       ('Bleach Season 4','The fourth season of the Bleach anime series was directed by Noriyuki Abe and produced by Studio Pierrot.
+','01.08.2006',6,7.3,44095,1,1),
+       ('Cowboy Bebop Season 1','Aboard the spaceship Bebop, a bounty hunter and his group of skilled comrades embark on adventures across the Solar System to capture criminals.
+','03.04.1998',7,8.3,30682,1,4),
+       ('My Hero Academia Season 1','My Hero Academia is a Japanese superhero manga series written and illustrated by K?hei Horikoshi. The story follows Izuku Midoriya, a boy born without superpowers in a world where they have become commonplace, but who still dreams of becoming a superhero himself.
+','03.04.2016',8,8.9,2039,2,6),
+       ('My Hero Academia Season 2','The second season of the My Hero Academia anime series was produced by Bones and directed by Kenji Nagasaki.
+','01.04.2017',8,9.5,2309,1,6),
+       ('My Hero Academia Season 3','The third season of the My Hero Academia anime series was produced by Bones and directed by Kenji Nagasaki.
+','07.04.2018',8,8.1,3093,1,6),
+       ('My Hero Academia Season 4','The fourth season of the My Hero Academia anime series was produced by Bones and directed by Kenji Nagasaki and Masahiro Mukai, following the story of the original manga series from the second half of the 14th volume to the first chapters of the 21st volume.
+','12.10.2019',8,8.0,2396,1,6),
+       ('Attack on Titan Season 1','After his hometown is destroyed and his mother is killed, young Eren Jaeger vows to cleanse the earth of the giant humanoid Titans that have brought humanity to the brink of extinction.
+','07.04.2013',9,8.4,16641,1,7),
+       ('Attack on Titan Season 2','The season follows Eren Jaeger and his friends from the 104th Training Corps who have just begun to become full members of the Survey Corps. After fighting the Female Titan, Eren finds no time to rest as a horde of Titans is approaching Wall Rose and the battle for humanity continues. As the Survey Corps races to save the wall, they uncover more about the invading Titans and the dark secrets of their own members.
+','17.06.2017',9,9.1,19264,1,7),
+       ('Attack on Titan Season 3','After being rescued from the Colossal and Armored Titans, all seems well for the soldiers, until the government suddenly demands custody of Eren and Historia. Sought after by the government, Levi and his new squad must evade their adversaries in hopes of keeping Eren and Historia safe. In the second half of the season, the Survey Corps led by Erwin embark on a mission to retake Wall Maria, returning to the tattered Shiganshina District that was once Eren''s home. The Survey Corps strive to carve a path towards victory as Eren vows to take back everything that was once his.
+','23.07.2018',9,9.1,12764,1,7),
+       ('Attack on Titan Season 4','The season introduces Gabi Braun and Falco Grice, young Eldian Warrior candidates seeking to inherit Reiner''s Armored Titan four years after the failed mission to reclaim the Founding Titan.
+','07.12.2020',9,9.2,98347,1,2),
+       ('Jujutsu Kaisen Season 1','A boy swallows a cursed talisman - the finger of a demon - and becomes cursed himself. He enters a shaman''s school to be able to locate the demon''s other body parts and thus exorcise himself.
+','20.11.2020',10,9.1,17474,1,2),
+       ('Steins Gate Season 1','After discovering time travel, a university student and his colleagues must use their knowledge of it to stop an evil organization and their diabolical plans.
+','06.04.2011',11,8.6,19200,3,8),
+       ('Steins Gate Season 2','The eccentric, self-proclaimed mad scientist Rintarou Okabe has become a shell of his former self. Depressed and traumatized after failing to rescue his friend Makise Kurisu, he has decided to forsake his mad scientist alter ego and live as an ordinary college student. Surrounded by friends who know little of his time travel experiences, Okabe spends his days trying to forget the horrors of his adventures alone.
+','12.04.2018',11,8.5,10924,1,8),
+       ('Tokyo Ghoul Season 1','A Tokyo college student is attacked by a ghoul, a superpowered human who feeds on human flesh. He survives, but has become part ghoul and becomes a fugitive on the run.
+','04.07.2014',12,8.8,2984,2,1),
+       ('Tokyo Ghoul Season 2','The season roughly adapts the second half of the Tokyo Ghoul manga. Unlike the first season, however, Tokyo Ghoul ?A does not directly adapt everything from the manga. Rather, it mixes in the manga''s events and overall plotline with an anime original story written by the manga author Sui Ishida.
+','27.03.2015',12,8.1,2932,3,1),
+       ('Tokyo Ghoul:re','Set two years after the ending of the original series, it follows the story of Haise Sasaki, Ken Kaneki''s new identity, who is a member of the CCG and the leader of the Quinx Squad, a group of half-ghoul, half-human hybrids who use their ability to attack and defeat ghouls.
+','19.06.2018',12,7.6,20938,1,1);
+
+
+-- Actions table insertion
+INSERT INTO actions(name)
+VALUES ('will watch'),
+       ('currently watching'),
+       ('through away'),
+       ('already watched'),
+       ('another');
+
+SELECT *
+FROM actions;
+
+-- Genres table insertion
+INSERT INTO genres(name)
+VALUES ('Action'),
+       ('Adventure'),
+       ('Comedy'),
+       ('Drama'),
+       ('Slice of Life'),
+       ('Fantasy'),
+       ('Magic'),
+       ('Supernatural'),
+       ('Horror'),
+       ('Mystery'),
+       ('Psychological'),
+       ('Romance'),
+       ('Sci-Fi'),
+       ('Cyberpunk'),
+       ('Game'),
+       ('Ecchi'),
+       ('Demons'),
+       ('Harem'),
+       ('Josei'),
+       ('Kids'),
+       ('Historical'),
+       ('Isekai'),
+       ('Military');
+
+SELECT *
+FROM genres;
+
+-- Tags table insertion
+INSERT INTO tags(name)
+VALUES ('#anime'),
+       ('#animegirl'),
+       ('#animeart'),
+       ('#animememes'),
+       ('#animes'),
+       ('#animeboy'),
+       ('#animegirls'),
+       ('#animelove'),
+       ('#animedrawing'),
+       ('#animelover'),
+       ('#animeworld'),
+       ('#animefan'),
+       ('#animeedit'),
+       ('#animeedits'),
+       ('#animefans'),
+       ('#animememe'),
+       ('#animecosplay'),
+       ('#animelife'),
+       ('#animefanart'),
+       ('#animekawaii'),
+       ('#animefreak'),
+       ('#animelovers'),
+       ('#animeartist'),
+       ('#animestyle'),
+       ('#animeamv'),
+       ('#animemanga'),
+       ('#animeindo'),
+       ('#kawaiianime'),
+       ('#animedraw'),
+       ('#animecouple'),
+       ('#animeislife'),
+       ('#animeboys'),
+       ('#animemes'),
+       ('#animeme'),
+       ('#animeartwork'),
+       ('#animeotaku'),
+       ('#animecute'),
+       ('#animesketch'),
+       ('#loveanime'),
+       ('#animeforlife');
+
+SELECT *
+FROM tags;
+
+-- Anime Genres insertion
+
+INSERT INTO anime_genres(anime_id, genre_id)
+VALUES (1, 1),
+       (1, 3),
+       (1, 5),
+       (1, 6),
+       (2, 1),
+       (2, 5),
+       (2, 8),
+       (2, 9),
+       (3, 8),
+       (3, 2),
+       (3, 3),
+       (3, 10),
+       (4, 12),
+       (4, 11),
+       (4, 5),
+       (4, 8),
+       (5, 13),
+       (5, 5),
+       (5, 6),
+       (6, 7),
+       (6, 15),
+       (6, 16),
+       (6, 17),
+       (7, 10),
+       (7, 12),
+       (7, 15),
+       (7, 16),
+       (8, 2),
+       (8, 3),
+       (8, 4),
+       (9, 5),
+       (9, 18),
+       (9, 12),
+       (9, 11),
+       (10, 2),
+       (10, 3),
+       (10, 8),
+       (10, 10);
+
+SELECT *
+FROM anime_genres;
+
+-- ANIME_TAGS insertion
+INSERT INTO anime_tags(anime_id, tag_id)
+VALUES (1, 1),
+       (1, 2),
+       (1, 3),
+       (1, 4),
+       (1, 5),
+       (1, 6),
+       (1, 7),
+       (2, 8),
+       (2, 9),
+       (2, 10),
+       (2, 11),
+       (2, 12),
+       (2, 13),
+       (2, 14),
+       (3, 15),
+       (3, 16),
+       (3, 17),
+       (3, 18),
+       (3, 19),
+       (3, 20),
+       (3, 1),
+       (4, 2),
+       (4, 3),
+       (4, 4),
+       (4, 5),
+       (4, 6),
+       (4, 7),
+       (5, 8),
+       (5, 9),
+       (5, 10),
+       (5, 11),
+       (5, 12),
+       (5, 13),
+       (6, 14),
+       (6, 15),
+       (6, 16),
+       (6, 17),
+       (6, 18),
+       (6, 19),
+       (6, 20),
+       (6, 1),
+       (6, 2),
+       (7, 3),
+       (7, 4),
+       (7, 5),
+       (7, 6),
+       (7, 7),
+       (8, 8),
+       (8, 9),
+       (8, 10),
+       (8, 11),
+       (8, 12),
+       (8, 13),
+       (8, 14),
+       (8, 15),
+       (9, 16),
+       (9, 17),
+       (9, 18),
+       (9, 19),
+       (9, 20),
+       (9, 1),
+       (10, 2),
+       (10, 3),
+       (10, 4),
+       (10, 5),
+       (10, 6),
+       (10, 7),
+       (10, 8);
+
+SELECT *
+FROM anime_tags;
+
+-- COMMENTS table insertion
+INSERT INTO comments(content, replied_comment_id, owner_id, anime_id)
+VALUES ('I can drive 10 miles, walk 50 feet. Turn around and before I know it, I''d be back home. Or would I? I''m not sure but that''s just how it is.', NULL, 1,1),
+       ('Don''t you find it Funny that after Monday(M) and Tuesday(T), the rest of the week says WTF?',1,2,1),
+       ('I am ready to meet my Maker. Whether my Maker is prepared for the great ordeal of meeting me is another matter.', NULL, 2,2),
+       ('Buddy you''re a young man hard man Shoutin'' in the street gonna take on the world some day You got blood on yo'' face You big.', NULL ,3,2),
+       ('If I roll once and you roll twice. What does that mean? If I could I would. Wether or not I should, I still would.',2,3,1),
+       ('Microsoft bought Skype for 8,5 billion!.. what a bunch of idiots! I downloaded it for free!',2,4,1),
+       ('Oh, a storm is threat''ning My very life today If I don''t get some shelter Oh yeah, I''m gonna fade away.',3,5,2),
+       ('Don''t you find it Funny that after Monday(M) and Tuesday(T), the rest of the week says WTF?',1,5,1),
+       ('Girls have an unfair advantage over men: If they can''t get what they want by being smart, they can get it by being dumb.',NULL,4,5),
+       ('I like to wax my legs and stick the hair on my back. Why? Because it keeps my back warm. There''s method in my madness.',6,3,1),
+       ('Don''t steal, don''t lie, don''t cheat, don''t sell drugs. The government hates competition!', 10,2,1),
+       ('If I could I would. Wether or not I should, I still would.   If I roll once and you roll twice. What does that mean?',NULL,1,7),
+       ('Sometimes I wonder if I really can. But then I think to myself, maybe I can''t. But if I could, that would be good. Maybe it''s all a lie?',2,3,1),
+       ('I feel sorry for people who don''t drink. When they wake up in the morning, that''s as good as they''re going to feel all day.',NULL,5,9);
+
+SELECT *
+FROM comments;
+
+-- USER_ANIME_ACTIONS Table insertions
+INSERT INTO user_anime_actions(id, user_id, anime_id, action_id, is_favourite, rating)
+VALUES (1,1,1,True,Null),
+       (1,2,2,False,7.5),
+       (1,3,3,True,NULL),
+       (2,4,4,True,NULL),
+       (2,5,5,False,10.0),
+       (2,6,1,False,9.5),
+       (3,7,2,False,NULL),
+       (3,8,3,True,8.5),
+       (3,9,4,True,NULL),
+       (3,10,5,False,NULL),
+       (4,1,1,False,10.0),
+       (4,2,2,False,8.2),
+       (4,3,3,True,9.6),
+       (4,4,4,True,NULL),
+       (5,5,5,False,7.9),
+       (5,6,1,False,NULL),
+       (5,7,2,True,9.3),
+       (5,8,3,False,9.9);
+
+SELECT *
+FROM user_anime_actions;
+
+-- Phone table insertion
+
+INSERT INTO phones(phone, owner_id)
+VALUES ('267-801-9151', 1),
+       ('423-559-2187', 2),
+       ('610-320-7766', 3),
+       ('850-415-9305', 4),
+       ('830-213-5598', 5),
+       ('620-446-9490', 1),
+       ('404-329-5707', 2),
+       ('847-597-9149', 3),
+       ('502-446-3902', 4);
+
+SELECT *
+FROM phones;

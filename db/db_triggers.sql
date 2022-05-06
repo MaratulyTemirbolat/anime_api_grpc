@@ -312,3 +312,33 @@ CREATE TRIGGER update_comments_trigger
     ON comments
     FOR EACH ROW
 EXECUTE PROCEDURE update_function_trigger();
+
+-- TRIGGERS FOR SEASONS TABLE
+
+-- DELETE TRIGGER
+CREATE OR REPLACE FUNCTION delete_seasons_function_trigger()
+    RETURNS TRIGGER
+AS
+$$
+DECLARE
+BEGIN
+    UPDATE seasons
+    SET deleted_at = current_timestamp
+    WHERE id = OLD.id AND deleted_at IS NULL;
+    RETURN NULL;
+END;
+$$ language plpgsql;
+
+CREATE TRIGGER delete_seasons_trigger
+    BEFORE DELETE
+    ON seasons
+    FOR EACH ROW
+EXECUTE PROCEDURE delete_seasons_function_trigger();
+
+-- UPDATE TRIGGER
+
+CREATE TRIGGER update_seasons_trigger
+    BEFORE UPDATE
+    ON seasons
+    FOR EACH ROW
+EXECUTE PROCEDURE update_function_trigger();
