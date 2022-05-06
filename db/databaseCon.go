@@ -8,16 +8,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var databasePostgres *sql.DB
-
 // Не забыть в конце закрыть Базу данных!
-func ConnectGenDB() {
+func ConnectGenDB() *sql.DB {
 	var connectionDB string = "user = postgres password = 1538 dbname = trial_grpc sslmode=disable"
 	databasePostgres, err := sql.Open("postgres", connectionDB)
 	if err != nil {
 		log.Fatalf("Cannot connect to db by general settings, error: %v", err)
 	}
-	defer databasePostgres.Close()
 	// result, err := databasePostgres.Exec(
 	// 	"INSERT INTO users(username, first_name, last_name, email, password, birthday) VALUES ($1, $2, $3, $4, $5, $6);",
 	// 	"Temir009kz",
@@ -33,4 +30,5 @@ func ConnectGenDB() {
 	}
 	fmt.Println(result.RowsAffected())
 	fmt.Println(result)
+	return databasePostgres
 }
