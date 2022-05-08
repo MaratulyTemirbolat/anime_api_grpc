@@ -15,14 +15,15 @@ import (
 )
 
 const (
-	port string = ":8080"
-)
-
-const (
+	port        string = ":8080"
+	zeroValue   int    = 0
 	blockAction uint32 = 1
 )
 
-const zeroValue int = 0
+var (
+	message    string
+	MyDatabase *sql.DB
+)
 
 func is_id_provided(userId uint32) error {
 	if userId == uint32(zeroValue) {
@@ -30,8 +31,6 @@ func is_id_provided(userId uint32) error {
 	}
 	return nil
 }
-
-var message string
 
 // Описываем наши сервисы
 // UnimplementedUserServiceServer
@@ -368,25 +367,17 @@ func (cs *CommentServ) ReplyUserCommentAnime(ctx context.Context, req *api.Reply
 	}, nil
 }
 
-var MyDatabase *sql.DB
-
 func main() {
-	// Подключаемся к нашей базе данных черезе стандартную библиотеку sql
 	MyDatabase = db.ConnectGenDB()
-
-	// Не забываем закрыть базу данных в конце
 	defer MyDatabase.Close()
-
 	listener, err := net.Listen("tcp", port) // То, что мы используем для слушанья сервера
 	if err != nil {
 		log.Fatalf("Cannot listen to %s: %v", port, err)
 	}
 	defer listener.Close()
-	// Наш сервер, но он еще не слушает порт
-	grpcServer := grpc.NewServer()
 
-	// Делаем instance наших имплементированных сервисов
-	var userServ *UserServ = new(UserServ)
+	grpcServer := grpc.NewServer()         // Наш сервер, но он еще не слушает порт
+	var userServ *UserServ = new(UserServ) // Делаем instance наших имплементированных сервисов
 	var animeServ *AnimeServ = new(AnimeServ)
 	var commentServ *CommentServ = new(CommentServ)
 
