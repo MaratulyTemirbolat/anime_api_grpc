@@ -1,1 +1,1 @@
-ANIME API WITH USING GRPC AND REST ON GO.
+# Anime Api on GO using GRPC by Maratuly Temirbolat
