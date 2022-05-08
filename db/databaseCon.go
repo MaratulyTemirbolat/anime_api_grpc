@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -24,11 +23,11 @@ func ConnectGenDB() *sql.DB {
 	// 	"12345",
 	// 	"2001-01-31",
 	// )
-	result, err := databasePostgres.Exec("call add_friend();")
-	if err != nil {
-		log.Fatalf("During INSERT command appeared error: %v", err)
-	}
-	fmt.Println(result.RowsAffected())
-	fmt.Println(result)
+	// result, err := databasePostgres.Exec("call add_friend();")
+	// if err != nil {
+	// 	log.Fatalf("During INSERT command appeared error: %v", err)
+	// }
+	// fmt.Println(result.RowsAffected())
+	// fmt.Println(result)
 	return databasePostgres
 }
