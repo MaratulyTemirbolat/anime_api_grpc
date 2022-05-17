@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	currentUserID uint32 = 1
+	currentUserID uint32 = 0
 	ctx           context.Context
 	allApiOptions []string = []string{
 		"1. Log in (not ready)",
@@ -29,7 +29,9 @@ var (
 		"4. Add user to friends",
 		"5. View User Profile",
 		"6. Handle Anime",
-		"7. Exit",
+		"7. Logout",
+		"8. View all users' info",
+		"9. Exit",
 	}
 	allAnimeOptions []string = []string{
 		"1. Like Anime",
@@ -56,6 +58,8 @@ var (
 		addUserFriendClientHandler,
 		viewUserProfileClientHandler,
 		startAnimeOptions,
+		logoutClienHandler,
+		viewAllUsersInfoClientHandler,
 	}
 	animeFunctions []func() = []func(){
 		likeAnimeClientHandler,
@@ -66,6 +70,7 @@ var (
 		removeAnimeListClientHandler,
 		viewAnimeClientHandler,
 		commentAnimeClientHandler,
+		repplyUserCommentClientHandler,
 	}
 )
 
@@ -116,6 +121,7 @@ func startAnimeOptions() {
 func startAnimeApi() {
 	var apiOptions = getApiOptions()
 	for {
+		fmt.Println("\nYour ID: ", currentUserID)
 		fmt.Println(lineDelimeter)
 		showPreviewMessage()
 		fmt.Println(apiOptions)
@@ -165,15 +171,122 @@ func main() {
 	// log.Printf("Blocked user in %d microsec", time.Now().Sub(userServStartTime).Microseconds())
 }
 
+func isUserInSystem() bool {
+	if currentUserID != 0 {
+		return true
+	}
+	return false
+}
+
+func logoutTheSystem() {
+	currentUserID = 0
+	fmt.Println("You successfully logout the system!")
+}
+
 func logInClentHandler() {
-	fmt.Println("Sorry, but it is not ready yet. We will correct it in REST")
+	if isUserInSystem() == true {
+		fmt.Println("You are already in the system! Firstly log out!")
+		return
+	}
+
+	fmt.Print("\nPlease, type your username or email: ")
+	scanner.Scan()
+	var usernameEmail string = scanner.Text()
+
+	fmt.Print("\nPlease, type your password: ")
+	scanner.Scan()
+	var password string = scanner.Text()
+
+	loginRespnse, errService := userServClient.LoginUser(
+		ctx,
+		&api.UserLoginRequest{
+			EmailLogin: usernameEmail,
+			Password:   password,
+		},
+	)
+	if errService != nil {
+		log.Println("During process of blocking error appeared: ", errService)
+	} else {
+		currentUserID = uint32(loginRespnse.Id)
+		if currentUserID != uint32(zeroValue) {
+			fmt.Println("You successfully enterred the system")
+		} else {
+			fmt.Println("You enterred one the data wrongly!")
+		}
+	}
 }
 
 func registerClientHandler() {
-	fmt.Println("Sorry, but it is not ready yet. We will correct it in REST")
+	fmt.Print("\nPlease, type your USERNAME: ")
+	scanner.Scan()
+	var username string = scanner.Text()
+
+	fmt.Print("\nPlease, type your EMAIL: ")
+	scanner.Scan()
+	var email string = scanner.Text()
+
+	fmt.Print("\nPlease, type your PASSWORD: ")
+	scanner.Scan()
+	var password string = scanner.Text()
+
+	fmt.Print("\nPlease, type your FIRST NAME(optional) : ")
+	scanner.Scan()
+	var firstName string = scanner.Text()
+
+	fmt.Print("\nPlease, type your LAST NAME(optional) : ")
+	scanner.Scan()
+	var lastName string = scanner.Text()
+
+	loginRespnse, errService := userServClient.RegisterUser(
+		ctx,
+		&api.UserRegisterRequest{
+			Username:  username,
+			Email:     email,
+			Password:  password,
+			FirstName: firstName,
+			LastName:  lastName,
+		},
+	)
+	if errService != nil {
+		log.Println("During process of blocking error appeared: ", errService)
+	} else {
+		currentUserID = uint32(loginRespnse.Id)
+		fmt.Println("You successfully register and entered the system")
+	}
+}
+
+func viewAllUsersInfoClientHandler() {
+
+	allUsersInfoRespnse, errService := userServClient.ViewAllUsersInfo(
+		ctx,
+		&api.ViewAllUsersInfoRequest{
+			CurUserID: currentUserID,
+		},
+	)
+	if errService != nil {
+		log.Println("During process of blocking error appeared: ", errService)
+	} else {
+		fmt.Println("All users: ")
+		for _, user := range allUsersInfoRespnse.AllUsers {
+			fmt.Printf(
+				"\nUser id: %v; username: %v; first name: %v; last name: %v",
+				user.UserId,
+				user.Username,
+				user.FirstName,
+				user.LastName,
+			)
+		}
+		fmt.Println("")
+	}
 }
 
 func blockUserClientHandler() {
+
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
+
 	fmt.Print("\nPlease, type the ID of USER that you want to block: ")
 	scanner.Scan()
 	friendID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -196,6 +309,10 @@ func blockUserClientHandler() {
 }
 
 func addUserFriendClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("Please, type the ID of USER that you want to add to your friends: ")
 	scanner.Scan()
 	friendID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -217,7 +334,16 @@ func addUserFriendClientHandler() {
 	}
 }
 
+func logoutClienHandler() {
+	currentUserID = 0
+	fmt.Println("You successfully logout the system")
+}
+
 func viewUserProfileClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of USER that you want to VIEW: ")
 	scanner.Scan()
 	visitedID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -242,13 +368,15 @@ func viewUserProfileClientHandler() {
 			"\n\tUser's last name: ", pageResponse.LastName,
 			"\n\tUser's email: ", pageResponse.Email,
 			"\n\tUser's username: ", pageResponse.Username,
-			"\n\tDid you block the user: ", pageResponse.IsBlocked,
-			"\n\tUser's all phones: ", pageResponse.Phones,
 		)
 	}
 }
 
 func likeAnimeClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of Anime that you want to LIKE: ")
 	scanner.Scan()
 	animeID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -262,6 +390,7 @@ func likeAnimeClientHandler() {
 			UserId:   currentUserID,
 			AnimeId:  uint32(animeID),
 			ActionId: 5,
+			IsLike:   true,
 		},
 	)
 	if errService != nil {
@@ -272,6 +401,10 @@ func likeAnimeClientHandler() {
 }
 
 func addWatchLaterClientHanler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of Anime that you want to HANDLE: ")
 	scanner.Scan()
 	animeID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -285,6 +418,7 @@ func addWatchLaterClientHanler() {
 			UserId:   currentUserID,
 			AnimeId:  uint32(animeID),
 			ActionId: 1,
+			IsLike:   false,
 		},
 	)
 	if errService != nil {
@@ -295,6 +429,10 @@ func addWatchLaterClientHanler() {
 }
 
 func addCurrentlyWatchingClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of Anime that you want to add to currently watching list: ")
 	scanner.Scan()
 	animeID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -308,6 +446,7 @@ func addCurrentlyWatchingClientHandler() {
 			UserId:   currentUserID,
 			AnimeId:  uint32(animeID),
 			ActionId: 2,
+			IsLike:   false,
 		},
 	)
 	if errService != nil {
@@ -318,6 +457,10 @@ func addCurrentlyWatchingClientHandler() {
 }
 
 func addThroughAwayClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of Anime that you want to Trhough away: ")
 	scanner.Scan()
 	animeID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -331,6 +474,7 @@ func addThroughAwayClientHandler() {
 			UserId:   currentUserID,
 			AnimeId:  uint32(animeID),
 			ActionId: 3,
+			IsLike:   false,
 		},
 	)
 	if errService != nil {
@@ -341,6 +485,10 @@ func addThroughAwayClientHandler() {
 }
 
 func addAlreadyWatchedClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of Anime that you want to Watch later: ")
 	scanner.Scan()
 	animeID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -352,7 +500,8 @@ func addAlreadyWatchedClientHandler() {
 		&api.UserAnimeActionRequest{
 			UserId:   currentUserID,
 			AnimeId:  uint32(animeID),
-			ActionId: 3,
+			ActionId: 4,
+			IsLike:   false,
 		},
 	)
 	if errService != nil {
@@ -363,6 +512,10 @@ func addAlreadyWatchedClientHandler() {
 }
 
 func removeAnimeListClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of Anime that you want to remove from your list: ")
 	scanner.Scan()
 	animeID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -384,6 +537,10 @@ func removeAnimeListClientHandler() {
 }
 
 func viewAnimeClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of Anime that you want to View: ")
 	scanner.Scan()
 	animeID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -417,6 +574,10 @@ func viewAnimeClientHandler() {
 }
 
 func commentAnimeClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of Anime that you want to Comment: ")
 	scanner.Scan()
 	animeID, err := strconv.ParseInt(scanner.Text(), 10, 0)
@@ -443,6 +604,10 @@ func commentAnimeClientHandler() {
 }
 
 func repplyUserCommentClientHandler() {
+	if isUserInSystem() == false {
+		fmt.Println("Sorry, but firstly you need to LOGIN INTO THE SYSTEM")
+		return
+	}
 	fmt.Print("\nPlease, type the ID of Anime that you want to Comment: ")
 	scanner.Scan()
 	animeID, err := strconv.ParseInt(scanner.Text(), 10, 0)

@@ -72,6 +72,71 @@ func (us *UserServ) BlockUser(ctx context.Context, req *api.UserAddBlockUserRequ
 	}, nil
 }
 
+func (us *UserServ) RegisterUser(ctx context.Context, req *api.UserRegisterRequest) (*api.UserLoginRegisterResponse, error) {
+
+	_, dbErr := MyDatabase.Exec("CALL register_user($1, $2, $3, $4, $5);", req.Username, req.Email, req.Password, req.FirstName, req.LastName)
+	if dbErr != nil {
+		return nil, status.Errorf(codes.Canceled, "The process of registration was canceled because: ", dbErr.Error())
+	}
+
+	userVariableResponse := api.UserLoginRegisterResponse{}
+	registeredUserRow, dbErr := MyDatabase.Query("SELECT id FROM users WHERE username = $1 OR email = $2;", req.Username, req.Email)
+	if dbErr != nil {
+		return nil, status.Errorf(codes.Canceled, "The process was canceled because: ", dbErr.Error())
+	}
+	defer registeredUserRow.Close()
+
+	for registeredUserRow.Next() {
+		err := registeredUserRow.Scan(&userVariableResponse.Id)
+		if err != nil {
+			log.Println("Appeared error during iteration: ", err)
+			break
+		}
+	}
+
+	return &userVariableResponse, nil
+}
+
+func (us *UserServ) LoginUser(ctx context.Context, req *api.UserLoginRequest) (*api.UserLoginRegisterResponse, error) {
+	userVariableResponse := api.UserLoginRegisterResponse{}
+	loginUserRow, dbErr := MyDatabase.Query("SELECT get_user_id_log_in($1, $2) AS id;", req.EmailLogin, req.Password)
+	if dbErr != nil {
+		return nil, status.Errorf(codes.Canceled, "The process of entering system was canceled because: ", dbErr.Error())
+	}
+	defer loginUserRow.Close()
+
+	for loginUserRow.Next() {
+		err := loginUserRow.Scan(&userVariableResponse.Id)
+		if err != nil {
+			log.Println("Appeared error during iteration: ", err)
+			break
+		}
+	}
+	return &userVariableResponse, nil
+}
+
+func (us *UserServ) ViewAllUsersInfo(ctx context.Context, req *api.ViewAllUsersInfoRequest) (*api.ViewAllUsersInfoResponse, error) {
+	allUsersResponse := api.ViewAllUsersInfoResponse{}
+
+	allUsersRow, dbErr := MyDatabase.Query("SELECT id AS userId,first_name AS firstName, last_name AS lastName, email, username FROM users WHERE deleted_at IS NULL;")
+	if dbErr != nil {
+		return nil, status.Errorf(codes.Canceled, "The process of getting all users was canceled because: ", dbErr.Error())
+	}
+	defer allUsersRow.Close()
+
+	for allUsersRow.Next() {
+		us := api.ViewUserPageResponse{}
+		err := allUsersRow.Scan(&us.UserId, &us.FirstName, &us.LastName, &us.Email, &us.Username)
+		if err != nil {
+			log.Println("Appeared error during iteration: ", err)
+			break
+		}
+
+		allUsersResponse.AllUsers = append(allUsersResponse.AllUsers, &us)
+	}
+	return &allUsersResponse, nil
+}
+
 func (us *UserServ) AddUser(ctx context.Context, req *api.UserAddBlockUserRequest) (*api.ActionResponse, error) {
 	if errID := is_id_provided(req.FromUserId); errID != nil {
 		return &api.ActionResponse{
@@ -108,53 +173,24 @@ func (us *UserServ) ViewUserPage(ctx context.Context, req *api.ViewUserPageReque
 		return nil, errID
 	}
 
-	var isBlockedU bool
-	isBlockRow, dbErr := MyDatabase.Query("SELECT is_blocked FROM friends WHERE user_a_id = $1 AND user_b_id = $2 LIMIT 1;", req.UserId, req.VisitedUserId)
-	if dbErr != nil {
-		return nil, dbErr
-	}
-
-	for isBlockRow.Next() {
-		err := isBlockRow.Scan(&isBlockedU)
-		if err != nil {
-			log.Println("Appeared error during iteration in query: ", err)
-			break
-		}
-	}
 	resultRow, dbErr := MyDatabase.Query(
-		"SELECT users.id, users.first_name, users.last_name, users.email, users.username, phones.phone FROM users LEFT JOIN phones ON users.id = phones.owner_id WHERE users.id = $1;", req.VisitedUserId)
+		"SELECT users.id, users.first_name, users.last_name, users.email, users.username FROM users WHERE users.id = $1;", req.VisitedUserId)
 	if dbErr != nil {
 		return nil, dbErr
 	}
 	defer resultRow.Close()
-	user := []api.ViewUserPageResponse{}
+
+	curUser := api.ViewUserPageResponse{}
 
 	for resultRow.Next() {
-		us := api.ViewUserPageResponse{}
-		var phonee string
-
-		err := resultRow.Scan(&us.UserId, &us.FirstName, &us.LastName, &us.Email, &us.Username, &phonee)
+		err := resultRow.Scan(&curUser.UserId, &curUser.FirstName, &curUser.LastName, &curUser.Email, &curUser.Username)
 		if err != nil {
 			log.Println("Appeared error during iteration: ", err)
 			break
 		}
-
-		us.Phones = append(us.Phones, phonee)
-		user = append(user, us)
 	}
-	resultedUser := api.ViewUserPageResponse{}
-	if len(user) != 0 {
-		resultedUser.UserId = user[0].UserId
-		resultedUser.FirstName = user[0].FirstName
-		resultedUser.LastName = user[0].LastName
-		resultedUser.Email = user[0].Email
-		resultedUser.Username = user[0].Username
-		resultedUser.IsBlocked = isBlockedU
-		for _, v := range user {
-			resultedUser.Phones = append(resultedUser.Phones, v.Phones[0])
-		}
-
-		return &resultedUser, nil
+	if curUser.UserId != 0 {
+		return &curUser, nil
 	}
 
 	return nil, status.Errorf(
@@ -188,7 +224,7 @@ func (as *AnimeServ) HandleAnime(ctx context.Context, req *api.UserAnimeActionRe
 		)
 	}
 
-	_, dbErr := MyDatabase.Exec("call user_anime_action($1, $2, $3);", req.UserId, req.AnimeId, req.ActionId)
+	_, dbErr := MyDatabase.Exec("call user_anime_action($1, $2, $3, $4);", req.UserId, req.AnimeId, req.ActionId, req.IsLike)
 	if dbErr != nil {
 		return &api.ActionResponse{
 			Success: false,
@@ -231,6 +267,10 @@ func (as *AnimeServ) RemoveAnime(ctx context.Context, req *api.RemoveAnimeReques
 		Success: true,
 		Message: message,
 	}, nil
+}
+
+func (as *AnimeServ) ViewAllAnimes(ctx context.Context, req *api.ViewAllAnimeRequest) (*api.ViewAllAnimeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ViewAllAnimes not implemented")
 }
 
 func (as *AnimeServ) ViewAnime(ctx context.Context, req *api.ViewAnimeRequest) (*api.ViewAnimeResponse, error) {

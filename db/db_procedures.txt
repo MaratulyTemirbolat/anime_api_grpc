@@ -7,12 +7,9 @@ $$
 DECLARE
 BEGIN
     CASE
-        WHEN friend_id IS NULL OR user_id IS NULL THEN
-            RAISE EXCEPTION 'All IDs must be provided';
-        WHEN friend_id <= 0 OR user_id <= 0 THEN
-            RAISE EXCEPTION 'The ID can not be less than 1';
-        WHEN user_id = friend_id THEN
-            RAISE EXCEPTION 'You cannot add yourself to friends';
+        WHEN friend_id IS NULL OR user_id IS NULL THEN RAISE EXCEPTION 'All IDs must be provided';
+        WHEN friend_id <= 0 OR user_id <= 0 THEN RAISE EXCEPTION 'The ID can not be less than 1';
+        WHEN user_id = friend_id THEN RAISE EXCEPTION 'You cannot add yourself to friends';
         ELSE
         END CASE;
 END;
@@ -25,12 +22,9 @@ $$
 DECLARE
 BEGIN
     CASE
-        WHEN friend_id IS NULL OR user_id IS NULL THEN
-            RAISE EXCEPTION 'All IDs must be provided';
-        WHEN friend_id <= 0 OR user_id <= 0 THEN
-            RAISE EXCEPTION 'The ID can not be less than 1';
-        WHEN user_id = friend_id THEN
-            RAISE EXCEPTION 'You cannot send the same ID';
+        WHEN friend_id IS NULL OR user_id IS NULL THEN RAISE EXCEPTION 'All IDs must be provided';
+        WHEN friend_id <= 0 OR user_id <= 0 THEN RAISE EXCEPTION 'The ID can not be less than 1';
+        WHEN user_id = friend_id THEN RAISE EXCEPTION 'You cannot send the same ID';
         ELSE
         END CASE;
 END;
@@ -182,40 +176,63 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION is_user_anime_action_exist(userr_id INT, animee_id INT)
+    RETURNS bool
+AS
+$$
+DECLARE
+BEGIN
+    RETURN EXISTS(SELECT ID FROM user_anime_actions WHERE user_id = userr_id AND anime_id = animee_id LIMIT 1);
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT is_user_anime_action_exist(1, 10);
+
 -- For Action_ID
 -- 1 - Буду смотреть
 -- 2 - Сейчас смотрю
 -- 3 - Брошено
 -- 4 - Просмотрено
 -- 5 - Другое
-CREATE OR REPLACE PROCEDURE user_anime_action(user_id int DEFAULT NULL, anime_id INT DEFAULT NULL,
-                                              action_id INT DEFAULT NULL, iss_favourite BOOL DEFAULT FALSE,
+
+CREATE OR REPLACE PROCEDURE user_anime_action(userr_id int DEFAULT NULL, animee_id INT DEFAULT NULL,
+                                              actionn_id INT DEFAULT NULL, iss_favourite BOOL DEFAULT FALSE,
                                               rrating DOUBLE PRECISION DEFAULT NULL)
 AS
 $$
 DECLARE
-    found_user_id   INT := NULL;
-    found_anime_id  INT := NULL;
-    found_action_id INT := NULL;
+    found_user_id              INT  := NULL;
+    found_anime_id             INT  := NULL;
+    found_action_id            INT  := NULL;
+    is_anime_user_here         bool := is_user_anime_action_exist(userr_id, animee_id);
+    new_id                     INT  := (SELECT id + 1
+                                        FROM user_anime_actions
+                                        ORDER BY id DESC
+                                        LIMIT 1);
+    another_action_id CONSTANT INT  := 5;
 BEGIN
-    PERFORM is_id_valid(anime_id);
-    PERFORM is_id_valid(user_id);
-    PERFORM is_id_valid(action_id);
+    IF actionn_id IS NULL AND (iss_favourite = True OR rrating IS NOT NULL) THEN
+        actionn_id := another_action_id;
+    END IF;
+    PERFORM is_id_valid(animee_id);
+    PERFORM is_id_valid(userr_id);
+    PERFORM is_id_valid(actionn_id);
 
-    found_anime_id := (SELECT id from animes WHERE id = anime_id LIMIT 1);
-    found_user_id := get_found_user_id(user_id);
-    found_action_id := (SELECT id from actions WHERE id = action_id LIMIT 1);
+    found_anime_id := (SELECT id from animes WHERE id = animee_id LIMIT 1);
+    found_user_id := get_found_user_id(userr_id);
+    found_action_id := (SELECT id from actions WHERE id = actionn_id LIMIT 1);
 
     IF found_anime_id IS NULL THEN
-        RAISE EXCEPTION 'The ANIME with ID % is NOT FOUND', anime_id;
+        RAISE EXCEPTION 'The ANIME with ID % is NOT FOUND', animee_id;
     END IF;
 
     IF found_user_id IS NULL THEN
-        RAISE EXCEPTION 'The USER with ID % is NOT FOUND', user_id;
+        RAISE EXCEPTION 'The USER with ID % is NOT FOUND', userr_id;
     END IF;
 
     IF found_action_id IS NULL THEN
-        RAISE EXCEPTION 'The ACTION with ID % is NOT FOUND', action_id;
+        RAISE EXCEPTION 'The ACTION with ID % is NOT FOUND', actionn_id;
     END IF;
 
     IF rrating IS NOT NULL THEN
@@ -224,27 +241,62 @@ BEGIN
         end if;
     END IF;
 
-    INSERT INTO user_anime_actions(user_id, anime_id, action_id, is_favourite, rating)
-    VALUES (user_id, anime_id, action_id, iss_favourite, rrating);
+    IF is_anime_user_here = True THEN
+        UPDATE user_anime_actions
+        SET action_id    = actionn_id,
+            is_favourite = iss_favourite,
+            rating       = rrating
+        WHERE user_id = userr_id
+          AND anime_id = animee_id;
+    ELSE
+        INSERT INTO user_anime_actions(id, user_id, anime_id, action_id, is_favourite, rating)
+        VALUES (new_id, userr_id, animee_id, actionn_id, iss_favourite, rrating);
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+call user_anime_action(5, 15, NULL, True);
+SELECT *
+FROM user_anime_actions;
+SELECT *
+FROM user_anime_actions;
 -- ПРОВЕРИТЬ АНИМЕ ВЗАИМОДЕЙСТВИЯ (НУЖНЫ ДАННЫЕ)
 
--- LEAVE COMMENTS ( ПРОВЕРИТЬ ТЕСТАМИ ПРИ ПОЛУЧЕНИИ ДАННЫХ )
-CREATE OR REPLACE PROCEDURE leave_anime_comment(owner_user_id INT DEFAULT NULL, comment_text text DEFAULT NULL,
-                                                repplied_comment_id INT DEFAULT NULL, anime_id INT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION is_anime_comment_valid(comment_id INT, cur_anime_id INT)
+    RETURNS VOID
 AS
 $$
 DECLARE
-    found_user_id        INT := NULL;
-    found_rep_comment_id INT := NULL;
-    found_anime_id       INT := NULL;
+    found_anime_id INT := (SELECT anime_id
+                           FROM comments
+                           WHERE id = comment_id
+                           LIMIT 1);
+BEGIN
+    IF found_anime_id <> cur_anime_id OR comment_id <= 0 OR found_anime_id IS NULL THEN
+        RAISE EXCEPTION 'You cannot repply to comment from ANOTHER ANIME!';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- LEAVE COMMENTS ( ПРОВЕРИТЬ ТЕСТАМИ ПРИ ПОЛУЧЕНИИ ДАННЫХ )
+
+CREATE OR REPLACE PROCEDURE leave_anime_comment(owner_user_id INT DEFAULT NULL, comment_text text DEFAULT NULL,
+                                                repplied_comment_id INT DEFAULT NULL, animee_id INT DEFAULT NULL)
+AS
+$$
+DECLARE
+    found_user_id  INT := NULL;
+    found_anime_id INT := NULL;
+    new_id         INT := (SELECT id + 1
+                           FROM comments
+                           ORDER BY id DESC
+                           LIMIT 1);
 BEGIN
     PERFORM is_id_valid(owner_user_id);
-    PERFORM is_id_valid(anime_id);
+    PERFORM is_id_valid(animee_id);
     IF repplied_comment_id IS NOT NULL THEN
-        PERFORM is_id_valid(repplied_comment_id);
-        found_rep_comment_id := (SELECT id FROM comments WHERE id = repplied_comment_id LIMIT 1);
+        PERFORM is_anime_comment_valid(repplied_comment_id, animee_id);
     END IF;
 
     IF comment_text IS NULL THEN
@@ -252,34 +304,208 @@ BEGIN
     END IF;
 
     found_user_id := get_found_user_id(owner_user_id);
-    found_anime_id := (SELECT id FROM animes WHERE id = anime_id LIMIT 1);
+    found_anime_id := (SELECT id FROM animes WHERE id = animee_id LIMIT 1);
 
     IF found_user_id IS NULL THEN
         RAISE EXCEPTION 'The USER with ID % is NOT FOUND', owner_user_id;
     END IF;
 
     IF found_anime_id IS NULL THEN
-        RAISE EXCEPTION 'The ANIME with ID % is NOT FOUND', anime_id;
+        RAISE EXCEPTION 'The ANIME with ID % is NOT FOUND', animee_id;
     END IF;
 
-    IF found_rep_comment_id IS NULL AND repplied_comment_id IS NOT NULL THEN
-        RAISE EXCEPTION 'The COMMENT with ID % is DOES NOT EXIST', repplied_comment_id;
-    END IF;
 
-    INSERT INTO comments(content, replied_comment_id, owner_id, anime_id)
-    VALUES (comment_text, repplied_comment_id, owner_user_id, anime_id);
+    INSERT INTO comments(id, content, replied_comment_id, owner_id, anime_id)
+    VALUES (new_id, comment_text, repplied_comment_id, owner_user_id, animee_id);
 END;
 $$ LANGUAGE plpgsql;
 
+CALL leave_anime_comment(1, 'Trial test comment', NULL, 5);
 
 SELECT *
-FROM users;
-SELECT *
-FROm friends;
+FROM comments;
+-- REMOVE ANIME FROM LIST
+CREATE OR REPLACE PROCEDURE remove_anime_list(userr_id INT DEFAULT NULL, animee_id INT DEFAULT NULL)
+AS
+$$
+DECLARE
+    is_user_anime_here        bool := is_user_anime_action_exist(userr_id, animee_id);
+    remove_action_id CONSTANT INT  := 5;
+BEGIN
+    PERFORM is_id_valid(userr_id);
+    PERFORM is_id_valid(animee_id);
 
-SELECT COALESCE(
-               (SELECT MAX(id) FROM users WHERE id = 3)
-           , NULL) AS max_id;
-SELECT COALESCE(
-               (SELECT first_name FROM users WHERE id = 1)
-           , NULL);
+    IF is_user_anime_here = True THEN
+        UPDATE user_anime_actions
+        SET action_id = remove_action_id
+        WHERE user_id = userr_id
+          AND anime_id = animee_id;
+    ELSE
+        RAISE EXCEPTION 'You cannot REMOVE ANIME FROM THE LIST BECAUSE IT WAS NOT THERE';
+    END IF;
+END;
+$$
+    LANGUAGE plpgsql;
+
+call remove_anime_list(1, 2);
+
+-- USER REGISTRATION procedure
+CREATE OR REPLACE FUNCTION get_user_id_by_email_username(g_username VARCHAR(100), g_email VARCHAR(70))
+    RETURNS INT
+AS
+$$
+DECLARE
+BEGIN
+    RETURN (SELECT id FROM users WHERE username = g_username OR email = g_email LIMIT 1);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE register_user(g_username VARCHAR(100) DEFAULT NULL, g_email VARCHAR(70) DEFAULT NULL,
+                                          g_password TEXT DEFAULT NULL, g_first_name VARCHAR(100) DEFAULT '',
+                                          g_last_name VARCHAR(100) DEFAULT '')
+AS
+$$
+DECLARE
+    found_user_id INT := NULL;
+    new_id        INT := (SELECT id + 1
+                          FROM users
+                          ORDER BY id DESC
+                          LIMIT 1);
+BEGIN
+    IF g_username IS NULL OR g_email IS NULL OR g_password IS NULL THEN
+        RAISE EXCEPTION 'USERNAME, EMAIL AND PASSWORD ARE REQUIRED TO BE FILLED';
+    END IF;
+
+    found_user_id := get_user_id_by_email_username(g_username, g_email);
+    IF found_user_id IS NOT NULL THEN
+        RAISE EXCEPTION 'The USER ALREADY EXISTS';
+    END IF;
+
+    INSERT INTO users(id, username, first_name, last_name, email, password, birthday)
+    VALUES (new_id, g_username, g_first_name, g_last_name, g_email, g_password, CURRENT_DATE);
+
+END;
+$$
+    LANGUAGE plpgsql;
+
+CALL register_user('SemPY', 't_maratuly@mail.ru', '12345','Anuar','Sarsengaliev');
+
+-- LOG IN USER (WITH FUNCTION)
+CREATE OR REPLACE FUNCTION get_user_id_log_in(g_username_email varchar(70) DEFAULT '', g_password text DEFAULT '')
+    RETURNS INT
+AS
+$$
+DECLARE
+    user_id INT := NULL;
+BEGIN
+    user_id := (SELECT id FROM users WHERE (username = g_username_email OR email = g_username_email) AND password = crypt(g_password,password) LIMIT 1);
+
+    IF user_id IS NULL THEN
+        RETURN -1;
+    END IF;
+    RETURN user_id;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT get_user_id_log_in('temirbolat009kz','12345') AS id;
+
+-- TESTS (DON't COMPILE!)
+
+SELECT animes.id,
+       animes.name,
+       animes.description,
+       animes.release_year,
+       anime_groups.name,
+       animes.rating,
+       animes.views_number,
+       studios.name,
+       genres.name
+FROM animes
+         LEFT JOIN anime_genres
+                   ON animes.id = anime_genres.anime_id
+         LEFT JOIN genres
+                   ON genres.id = anime_genres.genre_id
+         LEFT JOIN anime_groups
+                   ON animes.group_id = anime_groups.id
+         LEFT JOIN studios
+                   ON animes.studio_id = studios.id
+WHERE animes.id = 1;
+
+CREATE OR REPLACE PROCEDURE trial()
+AS
+$$
+DECLARE
+    variable_a INT;
+    variable_c INT;
+BEGIN
+    SELECT INTO variable_a, variable_c 1,
+                                       2;
+    RAISE NOTICE 'variable_a is % and variable_c is %', variable_a, variable_c;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP PROCEDURE trial();
+
+SELECT users.id, users.first_name, users.Last_name, users.Email, users.Username, friends.is_blocked
+FROM users
+         JOIN friends
+              ON users.id = friends.user_b_id
+WHERE friends.user_a_id = 1
+  AND friends.user_b_id = 2;
+
+SELECT users.id, users.first_name, users.Last_name, users.Email, users.Username, friends.is_blocked
+FROM users
+         JOIN friends
+              ON users.id = friends.user_b_id
+WHERE friends.user_a_id = 1
+  AND friends.user_b_id = 2;
+
+SELECT users.id, users.first_name, users.last_name, users.email, users.username, phones.phone
+FROM users
+         LEFT JOIN phones ON users.id = phones.owner_id
+WHERE users.id = 1;
+
+SELECT is_blocked
+FROM friends
+WHERE user_a_id = 1
+  AND user_b_id = 2
+LIMIT 1;
+
+SELECT *
+FROM friends;
+
+SELECT *
+FROM user_anime_actions;
+
+
+CREATE EXTENSION pgcrypto;
+
+CREATE TABLE myTable
+(
+    id       SERIAL PRIMARY KEY,
+    email    VARCHAR(50) NOT NULL unique,
+    password TEXT        NOT NULL
+);
+
+INSERT INTO myTable (email, password)
+VALUES ('t_maratuly@kbtu.kz', crypt('12345', gen_salt('bf')));
+INSERT INTO myTable (email, password)
+VALUES ('t_maratuly@mail.ru', crypt('12345', gen_salt('bf')));
+
+SELECT EXISTS(SELECT id
+              FROM myTable
+              WHERE email = 't_maratuly@mail.ruu'
+                AND password = crypt('12345', password));
+
+SELECT (
+           password = crypt('12345', password)
+           ) AS pswmatch
+FROM myTable
+WHERE email = 't_maratuly@mail.ru';
+
+INSERT INTO myTable (email, password)
+VALUES ('t_maratuly@mail.ru', '12345');
+
+SELECT * FROM myTable;
+
+SELECT id AS userId,first_name AS firstName, last_name AS lastName, email, username FROM users WHERE deleted_at IS NULL;

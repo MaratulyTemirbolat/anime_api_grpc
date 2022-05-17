@@ -38,6 +38,24 @@ CREATE TRIGGER update_user_trigger
     FOR EACH ROW
 EXECUTE PROCEDURE update_function_trigger();
 
+-- CREATE TRIGGER for password encryption
+CREATE OR REPLACE FUNCTION create_function_trigger()
+    RETURNS TRIGGER
+AS
+$$
+DECLARE
+BEGIN
+    NEW.password = crypt(NEW.password, gen_salt('bf'));
+    RETURN NEW;
+END;
+$$ language plpgsql;
+
+CREATE TRIGGER create_user_trigger
+    BEFORE INSERT
+    ON users
+    FOR EACH ROW
+EXECUTE PROCEDURE create_function_trigger();
+
 SELECT * FROM users;
 SET datestyle = dmy;
 INSERT INTO users(username, first_name, last_name, email, password, birthday) VALUES ('Temir','Temirbolat', 'Maratuly','t_maratuly@kbtu.kz','12345','31.01.2001');

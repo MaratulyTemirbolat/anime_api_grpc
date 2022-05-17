@@ -6,13 +6,71 @@ option go_package = "./../api";
 
 package api;
 
+import "google/api/annotations.proto";
+
 
 // USER SERVICE START
 
 service UserService {
-    rpc BlockUser(UserAddBlockUserRequest) returns (ActionResponse);
-    rpc AddUser(UserAddBlockUserRequest) returns (ActionResponse);
-    rpc ViewUserPage(ViewUserPageRequest) returns (ViewUserPageResponse);
+    rpc RegisterUser(UserRegisterRequest) returns (UserLoginRegisterResponse) {
+        option (google.api.http) = {
+            post: "/register"
+            body: "*"
+        };
+    }
+    rpc LoginUser(UserLoginRequest) returns (UserLoginRegisterResponse) {
+        option (google.api.http) = {
+            post: "/login"
+            body: "*"
+        };
+    }
+    rpc BlockUser(UserAddBlockUserRequest) returns (ActionResponse) {
+        option (google.api.http) = {
+            post: "/block"
+            body: "*"
+        };
+    }
+    rpc AddUser(UserAddBlockUserRequest) returns (ActionResponse) {
+        option (google.api.http) = {
+            post: "/add"
+            body: "*"
+        };
+    }
+    rpc ViewUserPage(ViewUserPageRequest) returns (ViewUserPageResponse) {
+        option (google.api.http) = {
+            get:"/user/{id}"
+        };
+    }
+    rpc ViewAllUsersInfo(ViewAllUsersInfoRequest) returns (ViewAllUsersInfoResponse) {
+        option (google.api.http) = {
+            get:"/users"
+        };
+    }
+}
+
+message ViewAllUsersInfoRequest{
+    uint32 curUserID = 1;
+}
+
+message ViewAllUsersInfoResponse {
+    repeated ViewUserPageResponse allUsers = 1;
+}
+
+message UserLoginRequest {
+    string emailLogin = 1;
+    string password = 2;
+}
+
+message UserLoginRegisterResponse {
+    int32 id = 1;
+}
+
+message UserRegisterRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+    string firstName = 4;
+    string lastName = 5;
 }
 
 message UserAddBlockUserRequest {
@@ -31,15 +89,40 @@ message ViewUserPageResponse {
     string lastName = 3;
     string email = 4;
     string username = 5;
-    repeated string phones = 6;
-    bool is_blocked = 7;
 }
 // ANIME SERVICE
 
 service AnimeService {
-    rpc HandleAnime(UserAnimeActionRequest) returns (ActionResponse);
-    rpc RemoveAnime(RemoveAnimeRequest) returns (AnimeResponse);
-    rpc ViewAnime(ViewAnimeRequest) returns (ViewAnimeResponse);
+    rpc HandleAnime(UserAnimeActionRequest) returns (ActionResponse) {
+        option (google.api.http) = {
+            post: "/animehandle"
+            body: "*"
+        };
+    }
+    rpc RemoveAnime(RemoveAnimeRequest) returns (AnimeResponse) {
+        option (google.api.http) = {
+            post: "/removeanime"
+            body: "*"
+        };
+    }
+    rpc ViewAnime(ViewAnimeRequest) returns (ViewAnimeResponse) {
+        option (google.api.http) = {
+            get:"/anime/{id}"
+        };
+    }
+    rpc ViewAllAnimes(ViewAllAnimeRequest) returns (ViewAllAnimeResponse) {
+        option (google.api.http) = {
+            get:"/animes"
+        };
+    }
+}
+
+message ViewAllAnimeRequest{
+    uint32 userID = 1;
+}
+
+message ViewAllAnimeResponse {
+    repeated ViewAnimeResponse allAnimes = 1;
 }
 
 message RemoveAnimeRequest{
@@ -51,6 +134,8 @@ message UserAnimeActionRequest {
     uint32 userId = 1;
     uint32 animeId = 2;
     uint32 actionId = 3;
+    bool isLike = 4;
+    double rating = 5;
 }
 
 
@@ -80,10 +165,23 @@ message ViewAnimeResponse{
 // COMMENT SERVICE
 
 service CommentService {
-    rpc ShowAnimeComments(ShowAnimeCommentsRequest) returns (ShowAnimeCommentsResponse);
-    rpc CommentAnime(CommentAnimeRequest) returns (ActionResponse);
-    rpc ReplyUserCommentAnime(ReplyUserCommentAnimeRequest) returns (ActionResponse);
-    
+    rpc ShowAnimeComments(ShowAnimeCommentsRequest) returns (ShowAnimeCommentsResponse) {
+        option (google.api.http) = {
+            get:"comments/anime/{id}"
+        };
+    }
+    rpc CommentAnime(CommentAnimeRequest) returns (ActionResponse) {
+        option (google.api.http) = {
+            post: "comment/anime"
+            body: "*"
+        };
+    }
+    rpc ReplyUserCommentAnime(ReplyUserCommentAnimeRequest) returns (ActionResponse) {
+        option (google.api.http) = {
+            post: "comment/reply/anime"
+            body: "*"
+        };
+    }
 }
 
 message EditAnimeCommentRequest {
@@ -98,6 +196,10 @@ message ShowAnimeCommentsRequest {
 }
 
 message ShowAnimeCommentsResponse {
+    repeated AnimeCommentResponse animeComments = 1;
+}
+
+message AnimeCommentResponse {
     uint32 animeId = 1;
     uint32 commentId = 2;
     string content = 3;
