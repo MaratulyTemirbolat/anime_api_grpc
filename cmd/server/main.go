@@ -410,6 +410,20 @@ func (cs *CommentServ) ReplyUserCommentAnime(ctx context.Context, req *api.Reply
 func main() {
 	MyDatabase = db.ConnectGenDB()
 	defer MyDatabase.Close()
+
+	// go func(){
+	// 	//mux implementation
+	// 	mux := runtime.NewServeMux()
+
+	// 	// register service for REST
+	// 	api.RegisterAnimeServiceHandlerServer(context.Background(),mux,&AnimeServ{})
+	// 	api.RegisterUserServiceHandlerServer(context.Background(),mux,&UserServ{})
+	// 	api.RegisterCommentServiceHandlerServer(context.Background(),mux,&CommentServ{})
+
+	// 	// launch http server for REST
+	// 	log.Fatalln(http.ListenAndServe("localhost:8081",mux))
+	// }()
+
 	listener, err := net.Listen("tcp", port) // То, что мы используем для слушанья сервера
 	if err != nil {
 		log.Fatalf("Cannot listen to %s: %v", port, err)

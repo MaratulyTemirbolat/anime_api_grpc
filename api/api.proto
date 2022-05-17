@@ -9,7 +9,7 @@ package api;
 import "google/api/annotations.proto";
 
 
-// USER SERVICE START
+// USER SERVICE REST IMPLEMENTATION
 
 service UserService {
     rpc RegisterUser(UserRegisterRequest) returns (UserLoginRegisterResponse) {
@@ -90,7 +90,7 @@ message ViewUserPageResponse {
     string email = 4;
     string username = 5;
 }
-// ANIME SERVICE
+// ANIME SERVICE REST IMPLEMENTATION
 
 service AnimeService {
     rpc HandleAnime(UserAnimeActionRequest) returns (ActionResponse) {
@@ -162,7 +162,7 @@ message ViewAnimeResponse{
     repeated string genres = 9; 
 }
 
-// COMMENT SERVICE
+// COMMENT SERVICE REST IMPLEMENTATION
 
 service CommentService {
     rpc ShowAnimeComments(ShowAnimeCommentsRequest) returns (ShowAnimeCommentsResponse) {
